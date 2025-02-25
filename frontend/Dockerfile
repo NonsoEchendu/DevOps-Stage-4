@@ -35,5 +35,8 @@ COPY ../.env .
 # Expose port
 EXPOSE 8080
 
+# Set environment variables from .env file
+ENV $(grep -v '^#' .env | xargs)
+
 # Start the app using a Node.js server
 CMD ["npm", "run", "dev"]
