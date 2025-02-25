@@ -29,8 +29,8 @@ COPY --from=build-stage /app/dist ./dist
 COPY package*.json ./
 RUN npm install --only=production
 
-# Copy the .env file
-COPY .env .
+# Copy the .env file from root directory
+COPY ../.env .
 
 # Expose port
 EXPOSE 8080
