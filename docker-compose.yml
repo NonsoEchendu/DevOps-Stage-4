@@ -1,0 +1,55 @@
+services:
+  frontend:
+    image: frontend
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    depends_on:
+      - auth-api
+      - todos-api
+
+  auth-api:
+    image: auth-api
+    build: ./auth-api
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./.env
+    depends_on:
+      - users-api
+      - redis-queue
+
+  users-api:
+    image: users-api
+    build: ./users-api
+    ports:
+      - "8083:8083"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis-queue
+
+  todos-api:
+    image: todos-api
+    build: ./todos-api
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis-queue
+
+  log-message-processor:
+    image: log-message-processor
+    build: ./log-message-processor
+    env_file:
+      - ./.env
+    depends_on:
+      - redis-queue
+
+  redis-queue:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
