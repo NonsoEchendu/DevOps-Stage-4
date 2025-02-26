@@ -1,18 +1,20 @@
 services:
   frontend:
-    image: frontend
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
     ports:
-      - "8080:8080"
-    env_file:
-      - ./.env
+      - "80:80"
     depends_on:
       - auth-api
       - todos-api
 
   auth-api:
-    image: auth-api
-    build: ./auth-api
+    build: 
+      context: ./auth-api
+      dockerfile: Dockerfile
+    container_name: auth-api
     ports:
       - "8081:8081"
     env_file:
@@ -22,8 +24,10 @@ services:
       - redis-queue
 
   users-api:
-    image: users-api
-    build: ./users-api
+    build: 
+      context: ./users-api
+      dockerfile: Dockerfile
+    container_name: users-api
     ports:
       - "8083:8083"
     env_file:
@@ -32,8 +36,10 @@ services:
       - redis-queue
 
   todos-api:
-    image: todos-api
-    build: ./todos-api
+    build: 
+      context: ./todos-api
+      dockerfile: Dockerfile
+    container_name: todos-api
     ports:
       - "8082:8082"
     env_file:
@@ -42,8 +48,10 @@ services:
       - redis-queue
 
   log-message-processor:
-    image: log-message-processor
-    build: ./log-message-processor
+    build: 
+      context: ./log-message-processor
+      dockerfile: Dockerfile
+    container_name: log-message-processor
     env_file:
       - ./.env
     depends_on:
@@ -51,5 +59,6 @@ services:
 
   redis-queue:
     image: redis:alpine
+    container_name: redis-queue
     ports:
       - "6379:6379"

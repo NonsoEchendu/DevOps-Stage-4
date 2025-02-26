@@ -1,42 +1,14 @@
 # Stage 1: Build the Vue.js app
 FROM node:14 AS build-stage
-
-# Set the working directory
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install  
-
-# Copy the rest of the application code
+RUN npm install
 COPY . .
+RUN npm run build
 
-# Build the Vue.js app for production
-RUN npm run build  
-
-# Stage 2: Serve the app using Node.js
-FROM node:14 AS production-stage
-
-# Set the working directory
-WORKDIR /app
-
-# Copy the built app from the build stage
-COPY --from=build-stage /app/dist ./dist
-
-# Copy package.json and install only production dependencies
-COPY package*.json ./
-RUN npm install --only=production
-
-# Copy the .env file from root directory
-COPY ../.env .
-
-# Expose port
-EXPOSE 8080
-
-# Set environment variables from .env file
-ENV $(grep -v '^#' .env | xargs)
-
-# Start the app using a Node.js server
-CMD ["npm", "run", "dev"]
+# Stage 2: Serve the app using Nginx
+FROM nginx:alpine AS production-stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
