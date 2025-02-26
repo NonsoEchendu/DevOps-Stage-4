@@ -1,4 +1,19 @@
 services:
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./certs:/etc/nginx/certs:ro  # If using SSL
+  #   depends_on:
+  #     - frontend
+  #     - auth-api
+  #     - todos-api
+  #     - users-api
+
   frontend:
     build: 
       context: ./frontend
@@ -9,6 +24,8 @@ services:
     depends_on:
       - auth-api
       - todos-api
+    networks:
+      - todo-network
 
   auth-api:
     build: 
@@ -22,6 +39,8 @@ services:
     depends_on:
       - users-api
       - redis-queue
+    networks:
+      - todo-network
 
   users-api:
     build: 
@@ -34,6 +53,8 @@ services:
       - ./.env
     depends_on:
       - redis-queue
+    networks:
+      - todo-network
 
   todos-api:
     build: 
@@ -46,6 +67,8 @@ services:
       - ./.env
     depends_on:
       - redis-queue
+    networks:
+      - todo-network
 
   log-message-processor:
     build: 
@@ -56,9 +79,25 @@ services:
       - ./.env
     depends_on:
       - redis-queue
+    networks:
+      - todo-network
 
   redis-queue:
     image: redis:alpine
     container_name: redis-queue
     ports:
       - "6379:6379"
+    networks:
+      - todo-network
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - todo-network
+
+networks:
+  todo-network:
+    driver: bridge
