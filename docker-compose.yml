@@ -7,32 +7,9 @@ services:
       - "443:443"  # HTTPS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik/config:/etc/traefik
+      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml
+      - ./traefik/config:/etc/traefik/config
       - ./traefik/acme:/etc/traefik/acme
-    command:
-      # Docker provider configuration
-      - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      
-      # File provider for static configurations
-      - --providers.file.directory=/etc/traefik/config
-      
-      # Entry points configuration
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      
-      # HTTP to HTTPS redirection
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entryPoint.scheme=https
-      - --entrypoints.web.http.redirections.entryPoint.permanent=true
-      
-      # Let's Encrypt configuration
-      - --certificatesresolvers.myresolver.acme.tlschallenge=true
-      - --certificatesresolvers.myresolver.acme.email=nonsoechendu1@gmail.com
-      - --certificatesresolvers.myresolver.acme.storage=/etc/traefik/acme/acme.json
-      
-      # Logging
-      - --log.level=INFO
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$ruca84Hq$$mbjdMZBAG.KWn7vfN/SNK/"  # admin:password
@@ -52,6 +29,7 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.middlewares=global-middleware"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       - auth-api
@@ -67,6 +45,8 @@ services:
     container_name: auth-api
     env_file:
       - ./.env
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411
     labels:
       - "traefik.enable=true"
       # Subdomain approach
@@ -74,17 +54,18 @@ services:
       - "traefik.http.routers.auth-api-domain.entrypoints=websecure"
       - "traefik.http.routers.auth-api-domain.tls=true"
       - "traefik.http.routers.auth-api-domain.tls.certresolver=myresolver"
+      - "traefik.http.routers.auth-api-domain.middlewares=global-middleware"
       # Path prefix approach
       - "traefik.http.routers.auth-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth-api-path.entrypoints=websecure"
       - "traefik.http.routers.auth-api-path.tls=true"
-      - "traefik.http.middlewares.auth-strip-prefix.stripprefix.prefixes=/api/auth"
-      - "traefik.http.routers.auth-api-path.middlewares=auth-strip-prefix"
+      - "traefik.http.routers.auth-api-path.middlewares=auth-strip-prefix,global-middleware"
       # Common configuration
       - "traefik.http.services.auth-api.loadbalancer.server.port=8081"
     depends_on:
       - users-api
       - redis-queue
+      - zipkin
     networks:
       - todo-network
 
@@ -95,6 +76,8 @@ services:
     container_name: users-api
     env_file:
       - ./.env
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411
     labels:
       - "traefik.enable=true"
       # Subdomain approach
@@ -102,16 +85,17 @@ services:
       - "traefik.http.routers.users-api-domain.entrypoints=websecure"
       - "traefik.http.routers.users-api-domain.tls=true"
       - "traefik.http.routers.users-api-domain.tls.certresolver=myresolver"
+      - "traefik.http.routers.users-api-domain.middlewares=global-middleware"
       # Path prefix approach
       - "traefik.http.routers.users-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/users`)"
       - "traefik.http.routers.users-api-path.entrypoints=websecure"
       - "traefik.http.routers.users-api-path.tls=true"
-      - "traefik.http.middlewares.users-strip-prefix.stripprefix.prefixes=/api/users"
-      - "traefik.http.routers.users-api-path.middlewares=users-strip-prefix"
+      - "traefik.http.routers.users-api-path.middlewares=users-strip-prefix,global-middleware"
       # Common configuration
       - "traefik.http.services.users-api.loadbalancer.server.port=8083"
     depends_on:
       - redis-queue
+      - zipkin
     networks:
       - todo-network
 
@@ -122,6 +106,8 @@ services:
     container_name: todos-api
     env_file:
       - ./.env
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411
     labels:
       - "traefik.enable=true"
       # Subdomain approach
@@ -129,16 +115,17 @@ services:
       - "traefik.http.routers.todos-api-domain.entrypoints=websecure"
       - "traefik.http.routers.todos-api-domain.tls=true"
       - "traefik.http.routers.todos-api-domain.tls.certresolver=myresolver"
+      - "traefik.http.routers.todos-api-domain.middlewares=global-middleware"
       # Path prefix approach
       - "traefik.http.routers.todos-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/todos`)"
       - "traefik.http.routers.todos-api-path.entrypoints=websecure"
       - "traefik.http.routers.todos-api-path.tls=true"
-      - "traefik.http.middlewares.todos-strip-prefix.stripprefix.prefixes=/api/todos"
-      - "traefik.http.routers.todos-api-path.middlewares=todos-strip-prefix"
+      - "traefik.http.routers.todos-api-path.middlewares=todos-strip-prefix,global-middleware"
       # Common configuration
       - "traefik.http.services.todos-api.loadbalancer.server.port=8082"
     depends_on:
       - redis-queue
+      - zipkin
     networks:
       - todo-network
 
@@ -149,8 +136,11 @@ services:
     container_name: log-message-processor
     env_file:
       - ./.env
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411
     depends_on:
       - redis-queue
+      - zipkin
     networks:
       - todo-network
 
@@ -163,17 +153,10 @@ services:
   zipkin:
     image: openzipkin/zipkin
     container_name: zipkin
-    env_file:
-      - ./.env
     ports:
       - "9411:9411"
     networks:
       - todo-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9411/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
 networks:
   todo-network:
