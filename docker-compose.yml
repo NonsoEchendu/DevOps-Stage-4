@@ -59,7 +59,7 @@ services:
       - "traefik.http.routers.auth-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth-api-path.entrypoints=websecure"
       - "traefik.http.routers.auth-api-path.tls=true"
-      - "traefik.http.routers.auth-api-path.middlewares=auth-strip-prefix,global-middleware@file"
+      - "traefik.http.routers.auth-api-path.middlewares=auth-strip-prefix@file,global-middleware@file"
       # Common configuration
       - "traefik.http.services.auth-api.loadbalancer.server.port=8081"
     depends_on:
@@ -90,7 +90,7 @@ services:
       - "traefik.http.routers.users-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/users`)"
       - "traefik.http.routers.users-api-path.entrypoints=websecure"
       - "traefik.http.routers.users-api-path.tls=true"
-      - "traefik.http.routers.users-api-path.middlewares=users-strip-prefix,global-middleware@file"
+      - "traefik.http.routers.users-api-path.middlewares=users-strip-prefix@file,global-middleware@file"
       # Common configuration
       - "traefik.http.services.users-api.loadbalancer.server.port=8083"
     depends_on:
@@ -120,7 +120,7 @@ services:
       - "traefik.http.routers.todos-api-path.rule=Host(`michaeloxo.tech`) && PathPrefix(`/api/todos`)"
       - "traefik.http.routers.todos-api-path.entrypoints=websecure"
       - "traefik.http.routers.todos-api-path.tls=true"
-      - "traefik.http.routers.todos-api-path.middlewares=todos-strip-prefix,global-middleware@file"
+      - "traefik.http.routers.todos-api-path.middlewares=todos-strip-prefix@file,global-middleware@file"
       # Common configuration
       - "traefik.http.services.todos-api.loadbalancer.server.port=8082"
     depends_on:
