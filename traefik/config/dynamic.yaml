@@ -21,7 +21,7 @@ http:
           - DELETE
           - OPTIONS
         accessControlAllowOriginList:
-          - "https://domain.com"
+          - "https://michaeloxo.tech/"
         accessControlAllowCredentials: true
         accessControlMaxAge: 100
         addVaryHeader: true
